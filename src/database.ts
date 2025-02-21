@@ -1,7 +1,8 @@
 import { Pool } from "pg";
 import { text } from "stream/consumers";
 
-const pool=new Pool({
+
+export const pool=new Pool({
     user:"postgres",
     host: "localhost",
     database:"postgres",

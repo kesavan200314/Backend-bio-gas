@@ -7,6 +7,7 @@ import { generateToken } from "../utils/auth";
 //Function to create a new user
 export async function createUser(req:Request, res: Response) {
     const { username,email,password } = req.body;
+    
 
     //check user name exists
     const isuserNameExists = await UserNameExists(username);
@@ -47,20 +48,20 @@ interface User{
 //login page
 
 export async function signinuser(req:Request,res:Response){
-    const {username:resUsername,password} = req.body;
+    const {email:resEmail,password} = req.body;
 
     //get user from database
-    const user:User = await getUser(resUsername);
-
+    const user:User = await getUser(resEmail);
 
     //if user not found return 400
     if(!user){
         res.status(400).send("User not Found");
         return;
     }
-
-    //compare passwor
+ 
+    //compare password
     const isPasswordCorrect = await comparePasswords(password,user.password);
+    
 
     //if password is not correct return 400
     if(!isPasswordCorrect) {
@@ -70,8 +71,17 @@ export async function signinuser(req:Request,res:Response){
 
     //if password is correct return token
     const token= generateToken(user);
+    
+    // Set the token in a cookie
+    res.cookie('token', token, {
+        httpOnly: true, 
+        sameSite: 'strict', 
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000
+    });
+
     const { user_id,username,email}= user;
- 
+    
     res.status(200).send({user:{user_id,username,email},token:token});
 }
 

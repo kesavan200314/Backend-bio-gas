@@ -1,21 +1,24 @@
-import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
 export const SECRET_KEY: Secret = 'secretkey';
 
 export interface CustomRequest extends Request {
- token: string | JwtPayload;
+  token: {
+    _id: string;
+    name: string
+  };
 }
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
  try {
-   const token = req.header('Authorization')?.replace('Bearer ', '');
+  const token = req.cookies.token;
+  if (!token) {
+    res.status(401).send('Not authenticated');
+    return;
+  }
 
-   if (!token) {
-     throw new Error();
-   }
-
-   const decoded = jwt.verify(token, SECRET_KEY);
+   const decoded = jwt.verify(token, SECRET_KEY) as { _id: string; name: string; iat: number; exp: number; };
    (req as CustomRequest).token = decoded;
 
    next();
@@ -25,7 +28,7 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export function generateToken(user: any): string {
-    const token = jwt.sign({ _id: user.user_id?.toString(), name: user.username }, SECRET_KEY, {
+    const token = jwt.sign({ _id: user.id?.toString(), name: user.username }, SECRET_KEY, {
         expiresIn: '2 days',
       });
   
