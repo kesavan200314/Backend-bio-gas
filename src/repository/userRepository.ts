@@ -24,6 +24,6 @@ export const getUser =  async (email:string) => {
 }
 
 export const getUsersInfo = async () => {
-    const Users = await query ("SELECT * FROM public.User");
-    return Users;
+    const Users = await query (`SELECT * FROM public."user"`);
+    return Users.rows;
 };

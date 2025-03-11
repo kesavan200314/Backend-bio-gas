@@ -1,14 +1,10 @@
-import express, { Request, Response } from 'express';
-import { pool } from '../database'; // Make sure your database connection is correct!
-import {createBooking} from '../controller/BookingController'
+import { Router } from "express";
+import {createBooking, getAllBookings} from '../controller/BookingController'
 import { auth } from '../utils/auth';
 
-const bookRoute = express.Router();
+const router = Router();
 
- bookRoute.post('/create', auth, createBooking)
+router.get ('/', getAllBookings);
+router.post('/create', auth, createBooking);
 
-
- export default bookRoute
-
-
-
+export default router;     

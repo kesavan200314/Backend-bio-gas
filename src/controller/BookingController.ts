@@ -3,53 +3,48 @@ import { pool } from "../database";
 import { Request,Response } from "express";
 import { CustomRequest } from "../utils/auth";
 
-// 1. Get All Bookings
-const getAllBookings = async (req:Request, res:Response) => {
+export const getAllBookings = async (req: Request, res: Response) => {
+    console.log("jbdnjaskbd")
     try {
-        const result = await pool.query('SELECT * FROM bookings');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).send('Server Error');
-    }
-};
-
-// 2. Get a Single Booking by ID
-const getBookingById = async (req:Request, res:Response) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT * FROM bookings WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ msg: 'Booking not found' });
-        }
-        res.json(result.rows[0]);
-    }
-     catch (err) {
-        res.status(500).send('Server Error');
+        const result = await pool.query('SELECT * FROM public."Booking"'); // Your SQL query to fetch bookings
+        res.status(200).json(result.rows);  // Responding with bookings data
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        res.status(500).json({ message: "Internal Server Error" }); // Sending error response with status 500
     }
 };
 
 // // 3. Create a New Booking
-export const createBooking = async (req:Request, res:Response) => {
-    const { number, product, product_name } = req.body;
+export const createBooking = async (req: Request, res: Response) => {
+    try {
+        console.log("Inside booking/....");
 
-    const user_name = (req as CustomRequest).token.name;
-    
-    console.log("Inside booking/....")
-    
-    try  {
-      
+        const customReq = req as CustomRequest;
+
+        if (!customReq.token) {
+            console.log("Token is missing in request");
+            res.status(401).send("Authentication required");
+            return
+        }
+
+        const { number, product, product_name } = req.body;
+        const user_name = customReq.token.name;
+
+        console.log(`User Name: ${user_name}`); // ✅ Debugging
+
         const result = await pool.query(
             'INSERT INTO public."Booking" (name, number, product, product_name) VALUES ($1, $2, $3, $4) RETURNING *',
             [user_name, number, product, product_name]
         );
-        
+
         res.status(201).json(result.rows[0]);
-    }
-     catch (err) {
+    } catch (err) {
+        console.log("Comes HERE:", err);
         res.status(500).send(err);
-        console.log("Comes HERE:" + err)
+        return;
     }
 };
+
 
 // 4. Edit a Booking
 const editBooking = async (req: Request, res: Response) => {
@@ -89,5 +84,7 @@ const deleteBooking = async (req:Request, res:Response) => {
         res.status(500).send('Server Error');
     }
 };
+
+
 
 

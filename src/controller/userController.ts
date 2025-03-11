@@ -3,11 +3,11 @@ import { getUser, getUsersInfo, saveUser, UserEmailExists, UserNameExists} from 
 import { hash } from "crypto";
 import { comparePasswords, hashPassword } from "../utils/utils";
 import { generateToken } from "../utils/auth";
+import { pool } from "../database";
 
 //Function to create a new user
 export async function createUser(req:Request, res: Response) {
     const { username,email,password } = req.body;
-    
 
     //check user name exists
     const isuserNameExists = await UserNameExists(username);
@@ -71,14 +71,6 @@ export async function signinuser(req:Request,res:Response){
 
     //if password is correct return token
     const token= generateToken(user);
-    
-    // Set the token in a cookie
-    res.cookie('token', token, {
-        httpOnly: true, 
-        sameSite: 'strict', 
-        secure: false,
-        maxAge: 24 * 60 * 60 * 1000
-    });
 
     const { user_id,username,email}= user;
     
@@ -88,6 +80,49 @@ export async function signinuser(req:Request,res:Response){
 // Function to get user details
 export async function getUsers(req: Request, res: Response) {
     const users = await getUsersInfo();
-    res.status(200).send(users.rows);
+    res.status(200).send(users);
 }
 
+
+//delete user
+// export const deleteUser = async (req: Request, res: Response): Promise<any> => {
+//     try {
+//         const { id } = req.params;
+
+//         // Check if user exists
+//         const userCheck = await pool.query("SELECT * FROM user WHERE id = $1", [id]);
+
+//         if (userCheck.rows.length === 0) {
+//             return res.status(404).json({ message: "User not found." });
+//         }
+
+//         // Delete user from database
+//         await pool.query("DELETE FROM user WHERE id = $1", [id]);
+
+//         return res.status(200).json({ message: "User deleted successfully." });
+//     } catch (error) {
+//         console.error("Error deleting user:", error);
+//         return res.status(500).json({ message: "Server error" });
+//     }
+// };
+
+export const deleteUser = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const { id } = req.params;
+
+        // Check if user exists
+        const userCheck = await pool.query('SELECT * FROM "user" WHERE id = $1', [id]);
+
+        if (userCheck.rows.length === 0) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Delete user from database
+        await pool.query('DELETE FROM "user" WHERE id = $1', [id]);
+
+        return res.status(200).json({ message: "User deleted successfully." });
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
