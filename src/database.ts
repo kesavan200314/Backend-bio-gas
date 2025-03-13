@@ -3,10 +3,10 @@ import { text } from "stream/consumers";
 
 
 export const pool=new Pool({
-    user:"postgres",
-    host: "localhost",
-    database:"postgres",
-    password: "root0",
+    user:process.env.DB_USER,
+    host:process.env.DB_HOST ,
+    database:process.env.DATABASE,
+    password:process.env.PASSWORD ,
     port:5432
 })
 
