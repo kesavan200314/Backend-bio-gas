@@ -7,5 +7,4 @@ router.post('/register',createUser);
 router.post('/login',signinuser);
 router.get('/', getUsers)
 
-
 export default router;  
